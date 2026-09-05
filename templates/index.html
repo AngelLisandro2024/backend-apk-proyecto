@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechShop - Tienda de Componentes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 500: '#6366f1', 600: '#4f46e5' }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans">
+
+    <!-- Header / Navbar -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-brand-500 text-white p-2 rounded-xl font-black text-xl">TS</div>
+                <h1 class="text-xl font-bold tracking-tight">TechShop <span class="text-xs bg-brand-500/20 text-brand-500 px-2 py-0.5 rounded-full border border-brand-500/30">API Live</span></h1>
+            </div>
+            <a href="/docs" target="_blank" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-lg border border-slate-700 transition">
+                ⚙️ Ver API Swagger (/docs)
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        
+        <!-- Hero Banner -->
+        <section class="bg-gradient-to-r from-brand-600 to-purple-600 rounded-3xl p-8 mb-10 text-white shadow-2xl shadow-brand-500/10">
+            <h2 class="text-3xl sm:text-4xl font-extrabold mb-2">Hardware de Alto Rendimiento</h2>
+            <p class="text-indigo-100 max-w-xl text-sm sm:text-base">Catálogo en tiempo real sincronizado con tu base de datos FastAPI & SQLite en Render.</p>
+        </section>
+
+        <!-- Filtros de Categoría -->
+        <div class="flex gap-2 overflow-x-auto pb-4 mb-8" id="categories-container">
+            <button onclick="loadProducts()" class="bg-brand-500 text-white px-5 py-2 rounded-xl text-sm font-semibold shadow-lg shadow-brand-500/20 whitespace-nowrap">
+                Todos los productos
+            </button>
+        </div>
+
+        <!-- Grid de Productos -->
+        <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Cargando... -->
+            <div class="col-span-full text-center py-12 text-slate-500 animate-pulse">
+                Cargando catálogo desde la API...
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API_URL = window.location.origin;
+
+        // Cargar Categorías
+        async function fetchCategories() {
+            try {
+                const res = await fetch(`${API_URL}/categories`);
+                const categories = await res.json();
+                const container = document.getElementById('categories-container');
+                
+                categories.forEach(cat => {
+                    const btn = document.createElement('button');
+                    btn.className = "bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 px-5 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition";
+                    btn.innerText = cat.name;
+                    btn.onclick = () => loadProducts(cat.id);
+                    container.appendChild(btn);
+                });
+            } catch (err) {
+                console.error("Error al obtener categorías:", err);
+            }
+        }
+
+        // Cargar Productos
+        async function loadProducts(categoryId = null) {
+            const grid = document.getElementById('products-grid');
+            grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-500 animate-pulse">Cargando catálogo...</div>';
+
+            try {
+                let url = `${API_URL}/products`;
+                if (categoryId) url += `?category_id=${categoryId}`;
+
+                const res = await fetch(url);
+                const products = await res.json();
+
+                if (products.length === 0) {
+                    grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-500">No hay productos en esta categoría.</div>';
+                    return;
+                }
+
+                grid.innerHTML = products.map(p => `
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-slate-700 transition duration-300 flex flex-col group">
+                        <div class="h-48 bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
+                            <span class="absolute top-3 right-3 bg-slate-800/80 text-xs font-semibold px-2.5 py-1 rounded-lg border border-slate-700 text-slate-300">
+                                ${p.brand}
+                            </span>
+                            <div class="text-4xl text-slate-700 group-hover:scale-110 transition duration-300">💻</div>
+                        </div>
+                        <div class="p-6 flex-1 flex flex-col justify-between">
+                            <div>
+                                <h3 class="font-bold text-lg text-white mb-2 group-hover:text-brand-500 transition">${p.title}</h3>
+                                <p class="text-slate-400 text-sm line-clamp-2 mb-4">${p.description}</p>
+                            </div>
+                            <div class="flex items-center justify-between pt-4 border-t border-slate-800">
+                                <div>
+                                    <span class="text-xs text-slate-500 block">Precio</span>
+                                    <span class="text-2xl font-black text-white">$${p.price}</span>
+                                </div>
+                                <button class="bg-brand-500 hover:bg-brand-600 text-white font-semibold text-sm px-4 py-2.5 rounded-xl transition shadow-lg shadow-brand-500/20 active:scale-95">
+                                    Agregar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (err) {
+                grid.innerHTML = '<div class="col-span-full text-center py-12 text-red-400">Error al conectar con el servidor.</div>';
+            }
+        }
+
+        // Inicializar
+        fetchCategories();
+        loadProducts();
+    </script>
+</body>
+</html>

@@ -1,67 +1,79 @@
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from typing import List
+import os
 
 import models, schemas
-from database import engine, get_db
+from database import engine, SessionLocal, get_db
 
-# Crear tablas
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="TechShop API - Tienda de Componentes",
-    description="API RESTful para catálogo de laptops, RAM y tarjetas gráficas",
     version="1.0.0"
 )
 
-# Precargar datos de prueba
-def seed_data():
-    db = next(get_db())
-    if db.query(models.Category).count() == 0:
-        laptops = models.Category(name="Laptops", slug="laptops")
-        gpus = models.Category(name="Tarjetas de Video", slug="gpus")
-        ram = models.Category(name="Memorias RAM", slug="ram")
-        
-        db.add_all([laptops, gpus, ram])
-        db.commit()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-        prods = [
-            models.Product(
-                title="Laptop Gamer ASUS ROG Strix G16",
-                description="Core i7-13650HX, 16GB RAM, 1TB SSD, RTX 4060",
-                price=1399.99,
-                stock=5,
-                image_url="https://via.placeholder.com/400x300?text=ASUS+ROG+Strix",
-                brand="ASUS",
-                category_id=laptops.id
-            ),
-            models.Product(
-                title="NVIDIA GeForce RTX 4070 Super 12GB",
-                description="Tarjeta gráfica de alto rendimiento para gaming 1440p",
-                price=649.99,
-                stock=8,
-                image_url="https://via.placeholder.com/400x300?text=RTX+4070+Super",
-                brand="NVIDIA",
-                category_id=gpus.id
-            ),
-            models.Product(
-                title="Memoria RAM Corsair Vengeance DDR5 32GB (2x16GB)",
-                description="6000MHz CL36 Expo & XMP 3.0",
-                price=115.00,
-                stock=20,
-                image_url="https://via.placeholder.com/400x300?text=Corsair+DDR5",
-                brand="Corsair",
-                category_id=ram.id
-            )
-        ]
-        db.add_all(prods)
-        db.commit()
+def seed_data():
+    db = SessionLocal()
+    try:
+        if db.query(models.Category).count() == 0:
+            laptops = models.Category(name="Laptops", slug="laptops")
+            gpus = models.Category(name="Tarjetas de Video", slug="gpus")
+            ram = models.Category(name="Memorias RAM", slug="ram")
+            
+            db.add_all([laptops, gpus, ram])
+            db.commit()
+
+            prods = [
+                models.Product(
+                    title="Laptop Gamer ASUS ROG Strix G16",
+                    description="Core i7-13650HX, 16GB RAM, 1TB SSD, RTX 4060",
+                    price=1399.99,
+                    stock=5,
+                    image_url="https://via.placeholder.com/400x300",
+                    brand="ASUS",
+                    category_id=laptops.id
+                ),
+                models.Product(
+                    title="NVIDIA GeForce RTX 4070 Super 12GB",
+                    description="Tarjeta gráfica de alto rendimiento para gaming 1440p",
+                    price=649.99,
+                    stock=8,
+                    image_url="https://via.placeholder.com/400x300",
+                    brand="NVIDIA",
+                    category_id=gpus.id
+                ),
+                models.Product(
+                    title="Memoria RAM Corsair Vengeance DDR5 32GB",
+                    description="6000MHz CL36 Expo & XMP 3.0",
+                    price=115.00,
+                    stock=20,
+                    image_url="https://via.placeholder.com/400x300",
+                    brand="Corsair",
+                    category_id=ram.id
+                )
+            ]
+            db.add_all(prods)
+            db.commit()
+    finally:
+        db.close()
 
 seed_data()
 
-@app.get("/")
-def read_root():
-    return {"message": "Bienvenido a la API de TechShop"}
+# Servir la tienda visual e intuitiva en la raíz "/"
+@app.get("/", include_in_schema=False)
+def read_index():
+    return FileResponse(os.path.join("templates", "index.html"))
 
 @app.get("/categories", response_model=List[schemas.CategoryResponse], tags=["Catálogo"])
 def get_categories(db: Session = Depends(get_db)):
