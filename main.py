@@ -37,28 +37,28 @@ def seed_data():
             prods = [
                 models.Product(
                     title="Laptop Gamer ASUS ROG Strix G16",
-                    description="Core i7-13650HX, 16GB RAM, 1TB SSD, RTX 4060",
+                    description="Procesador Intel Core i7-13650HX, 16GB RAM DDR5, 1TB SSD NVMe, NVIDIA RTX 4060 8GB, Pantalla 16'' 165Hz.",
                     price=1399.99,
                     stock=5,
-                    image_url="https://via.placeholder.com/400x300",
+                    image_url="https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=800&auto=format&fit=crop&q=80",
                     brand="ASUS",
                     category_id=laptops.id
                 ),
                 models.Product(
                     title="NVIDIA GeForce RTX 4070 Super 12GB",
-                    description="Tarjeta gráfica de alto rendimiento para gaming 1440p",
+                    description="Arquitectura Ada Lovelace, DLSS 3, Ray Tracing de 3ra generación. Rendimiento masivo para gaming a 1440p y renderizado 3D.",
                     price=649.99,
                     stock=8,
-                    image_url="https://via.placeholder.com/400x300",
+                    image_url="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=800&auto=format&fit=crop&q=80",
                     brand="NVIDIA",
                     category_id=gpus.id
                 ),
                 models.Product(
                     title="Memoria RAM Corsair Vengeance DDR5 32GB",
-                    description="6000MHz CL36 Expo & XMP 3.0",
+                    description="Kit de 32GB (2x16GB) 6000MHz CL36. Disipador de aluminio anodizado, compatibilidad total con Intel XMP 3.0 y AMD EXPO.",
                     price=115.00,
                     stock=20,
-                    image_url="https://via.placeholder.com/400x300",
+                    image_url="https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=800&auto=format&fit=crop&q=80",
                     brand="Corsair",
                     category_id=ram.id
                 )
@@ -70,7 +70,6 @@ def seed_data():
 
 seed_data()
 
-# Servir la tienda visual e intuitiva en la raíz "/"
 @app.get("/", include_in_schema=False)
 def read_index():
     return FileResponse(os.path.join("templates", "index.html"))
@@ -92,11 +91,3 @@ def get_product(product_id: int, db: Session = Depends(get_db)):
     if not product:
         raise HTTPException(status_code=404, detail="Producto no encontrado")
     return product
-
-@app.post("/products", response_model=schemas.ProductResponse, tags=["Administración"])
-def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db)):
-    new_product = models.Product(**product.model_dump())
-    db.add(new_product)
-    db.commit()
-    db.refresh(new_product)
-    return new_product

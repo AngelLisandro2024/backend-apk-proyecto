@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TechShop - Tienda de Componentes</title>
+    <title>TechShop - Hardware Premium</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -11,55 +11,138 @@
             theme: {
                 extend: {
                     colors: {
-                        brand: { 500: '#6366f1', 600: '#4f46e5' }
+                        brand: { 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca' }
                     }
                 }
             }
         }
     </script>
+    <style>
+        .glass { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(12px); }
+    </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans">
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased flex flex-col justify-between">
 
     <!-- Header / Navbar -->
-    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+    <header class="border-b border-slate-800/80 glass sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+            <!-- Logo -->
             <div class="flex items-center gap-3">
-                <div class="bg-brand-500 text-white p-2 rounded-xl font-black text-xl">TS</div>
-                <h1 class="text-xl font-bold tracking-tight">TechShop <span class="text-xs bg-brand-500/20 text-brand-500 px-2 py-0.5 rounded-full border border-brand-500/30">API Live</span></h1>
+                <div class="bg-gradient-to-tr from-brand-600 to-indigo-400 text-white p-2.5 rounded-2xl shadow-lg shadow-brand-500/30 font-black text-xl tracking-wider">
+                    TS
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight leading-none">TechShop</h1>
+                    <span class="text-[10px] text-brand-400 font-semibold uppercase tracking-widest">Store Edition</span>
+                </div>
             </div>
-            <a href="/docs" target="_blank" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-lg border border-slate-700 transition">
-                ⚙️ Ver API Swagger (/docs)
-            </a>
+
+            <!-- Buscador en tiempo real -->
+            <div class="flex-1 max-w-md hidden sm:block">
+                <div class="relative">
+                    <input type="text" id="search-input" onkeyup="filterProducts()" placeholder="Buscar componentes, marcas..." 
+                        class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-brand-500 transition">
+                </div>
+            </div>
+
+            <!-- Carrito & Docs -->
+            <div class="flex items-center gap-3">
+                <a href="/docs" target="_blank" class="hidden md:flex text-xs bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 px-3 py-2 rounded-xl border border-slate-800 transition">
+                    ⚙️ API Specs
+                </a>
+                
+                <button onclick="toggleCart()" class="relative bg-brand-600 hover:bg-brand-500 text-white p-2.5 rounded-xl font-medium text-sm flex items-center gap-2 shadow-lg shadow-brand-500/20 transition active:scale-95">
+                    🛒 <span class="hidden sm:inline font-semibold">Carrito</span>
+                    <span id="cart-badge" class="bg-white text-brand-600 text-xs font-black px-2 py-0.5 rounded-full">0</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Buscador móvil -->
+        <div class="px-4 pb-3 sm:hidden">
+            <input type="text" id="search-input-mobile" onkeyup="filterProducts(true)" placeholder="Buscar productos..." 
+                class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-brand-500">
         </div>
     </header>
 
     <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 py-8">
+    <main class="max-w-7xl mx-auto px-4 py-6 w-full flex-1">
         
-        <!-- Hero Banner -->
-        <section class="bg-gradient-to-r from-brand-600 to-purple-600 rounded-3xl p-8 mb-10 text-white shadow-2xl shadow-brand-500/10">
-            <h2 class="text-3xl sm:text-4xl font-extrabold mb-2">Hardware de Alto Rendimiento</h2>
-            <p class="text-indigo-100 max-w-xl text-sm sm:text-base">Catálogo en tiempo real sincronizado con tu base de datos FastAPI & SQLite en Render.</p>
+        <!-- Hero Section -->
+        <section class="relative rounded-3xl overflow-hidden mb-8 border border-slate-800 bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 p-6 sm:p-10 shadow-2xl">
+            <div class="max-w-2xl">
+                <span class="inline-block bg-brand-500/10 text-brand-400 border border-brand-500/20 text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wider">Stock Disponible</span>
+                <h2 class="text-2xl sm:text-4xl font-extrabold text-white mb-3 tracking-tight">Equipamiento Tech de Alto Rendimiento</h2>
+                <p class="text-slate-400 text-sm sm:text-base leading-relaxed">Catálogo interactivo conectado en tiempo real a tu backend FastAPI & SQLite en Render.</p>
+            </div>
         </section>
 
-        <!-- Filtros de Categoría -->
-        <div class="flex gap-2 overflow-x-auto pb-4 mb-8" id="categories-container">
-            <button onclick="loadProducts()" class="bg-brand-500 text-white px-5 py-2 rounded-xl text-sm font-semibold shadow-lg shadow-brand-500/20 whitespace-nowrap">
-                Todos los productos
+        <!-- Filtros por Categoría -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-4 mb-6 scrollbar-none" id="categories-container">
+            <button onclick="selectCategory(null, this)" class="category-btn bg-brand-600 text-white px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap shadow-md shadow-brand-500/20">
+                Todos
             </button>
         </div>
 
         <!-- Grid de Productos -->
         <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Cargando... -->
-            <div class="col-span-full text-center py-12 text-slate-500 animate-pulse">
-                Cargando catálogo desde la API...
-            </div>
+            <div class="col-span-full text-center py-16 text-slate-500 animate-pulse">Cargando componentes...</div>
         </div>
     </main>
 
+    <!-- Modal Detalles de Producto -->
+    <div id="detail-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl relative">
+            <button onclick="closeModal()" class="absolute top-4 right-4 bg-slate-800 text-slate-400 hover:text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">✕</button>
+            <img id="modal-img" src="" class="w-full h-56 object-cover">
+            <div class="p-6">
+                <span id="modal-brand" class="text-xs font-bold text-brand-400 uppercase tracking-widest"></span>
+                <h3 id="modal-title" class="text-xl font-bold text-white my-1"></h3>
+                <p id="modal-desc" class="text-slate-400 text-sm mb-6 leading-relaxed"></p>
+                <div class="flex items-center justify-between pt-4 border-t border-slate-800">
+                    <span id="modal-price" class="text-2xl font-black text-white"></span>
+                    <button id="modal-add-btn" class="bg-brand-600 hover:bg-brand-500 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition shadow-lg shadow-brand-500/20">
+                        Agregar al Carrito
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide-over Carrito Lateral -->
+    <div id="cart-drawer" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden transition-opacity">
+        <div class="fixed inset-y-0 right-0 max-w-md w-full bg-slate-900 border-l border-slate-800 p-6 flex flex-col justify-between shadow-2xl">
+            <div>
+                <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">🛒 Tu Carrito</h3>
+                    <button onclick="toggleCart()" class="text-slate-400 hover:text-white text-lg">✕</button>
+                </div>
+                <div id="cart-items" class="py-4 space-y-4 max-h-[60vh] overflow-y-auto">
+                    <!-- Se llena con JS -->
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-slate-800">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-slate-400 text-sm">Total Estimado</span>
+                    <span id="cart-total" class="text-2xl font-black text-white">$0.00</span>
+                </div>
+                <button onclick="contactProvider()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-emerald-600/20 transition flex items-center justify-center gap-2">
+                    📲 Consultar Disponibilidad
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/80 py-6 text-center text-xs text-slate-600">
+        TechShop © 2026 - Powered by FastAPI & SQLite
+    </footer>
+
     <script>
         const API_URL = window.location.origin;
+        let allProducts = [];
+        let cart = [];
 
         // Cargar Categorías
         async function fetchCategories() {
@@ -70,62 +153,160 @@
                 
                 categories.forEach(cat => {
                     const btn = document.createElement('button');
-                    btn.className = "bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 px-5 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition";
+                    btn.className = "category-btn bg-slate-900 hover:bg-slate-800 text-slate-400 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap border border-slate-800 transition";
                     btn.innerText = cat.name;
-                    btn.onclick = () => loadProducts(cat.id);
+                    btn.onclick = (e) => selectCategory(cat.id, e.target);
                     container.appendChild(btn);
                 });
-            } catch (err) {
-                console.error("Error al obtener categorías:", err);
-            }
+            } catch (err) { console.error(err); }
         }
 
         // Cargar Productos
         async function loadProducts(categoryId = null) {
             const grid = document.getElementById('products-grid');
-            grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-500 animate-pulse">Cargando catálogo...</div>';
+            grid.innerHTML = '<div class="col-span-full text-center py-16 text-slate-500 animate-pulse">Cargando componentes...</div>';
 
             try {
                 let url = `${API_URL}/products`;
                 if (categoryId) url += `?category_id=${categoryId}`;
 
                 const res = await fetch(url);
-                const products = await res.json();
-
-                if (products.length === 0) {
-                    grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-500">No hay productos en esta categoría.</div>';
-                    return;
-                }
-
-                grid.innerHTML = products.map(p => `
-                    <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-slate-700 transition duration-300 flex flex-col group">
-                        <div class="h-48 bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
-                            <span class="absolute top-3 right-3 bg-slate-800/80 text-xs font-semibold px-2.5 py-1 rounded-lg border border-slate-700 text-slate-300">
-                                ${p.brand}
-                            </span>
-                            <div class="text-4xl text-slate-700 group-hover:scale-110 transition duration-300">💻</div>
-                        </div>
-                        <div class="p-6 flex-1 flex flex-col justify-between">
-                            <div>
-                                <h3 class="font-bold text-lg text-white mb-2 group-hover:text-brand-500 transition">${p.title}</h3>
-                                <p class="text-slate-400 text-sm line-clamp-2 mb-4">${p.description}</p>
-                            </div>
-                            <div class="flex items-center justify-between pt-4 border-t border-slate-800">
-                                <div>
-                                    <span class="text-xs text-slate-500 block">Precio</span>
-                                    <span class="text-2xl font-black text-white">$${p.price}</span>
-                                </div>
-                                <button class="bg-brand-500 hover:bg-brand-600 text-white font-semibold text-sm px-4 py-2.5 rounded-xl transition shadow-lg shadow-brand-500/20 active:scale-95">
-                                    Agregar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
+                allProducts = await res.json();
+                renderProducts(allProducts);
 
             } catch (err) {
-                grid.innerHTML = '<div class="col-span-full text-center py-12 text-red-400">Error al conectar con el servidor.</div>';
+                grid.innerHTML = '<div class="col-span-full text-center py-12 text-red-400">Error al conectar con la API.</div>';
             }
+        }
+
+        // Renderizar Tarjetas
+        function renderProducts(products) {
+            const grid = document.getElementById('products-grid');
+            if (products.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-500">No se encontraron productos.</div>';
+                return;
+            }
+
+            grid.innerHTML = products.map(p => `
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden hover:border-slate-700 transition-all duration-300 flex flex-col group shadow-lg">
+                    <div class="h-48 overflow-hidden relative bg-slate-950">
+                        <img src="${p.image_url}" alt="${p.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                        <span class="absolute top-3 right-3 bg-slate-900/90 text-xs font-bold px-2.5 py-1 rounded-lg border border-slate-700 text-slate-300 backdrop-blur">
+                            ${p.brand}
+                        </span>
+                    </div>
+                    <div class="p-5 flex-1 flex flex-col justify-between">
+                        <div>
+                            <h3 onclick="openModal(${p.id})" class="font-bold text-base text-white mb-2 cursor-pointer hover:text-brand-400 transition line-clamp-1">${p.title}</h3>
+                            <p class="text-slate-400 text-xs line-clamp-2 mb-4 leading-relaxed">${p.description}</p>
+                        </div>
+                        <div class="flex items-center justify-between pt-3 border-t border-slate-800/80">
+                            <div>
+                                <span class="text-[10px] text-slate-500 block uppercase font-bold">Precio</span>
+                                <span class="text-xl font-black text-white">$${p.price}</span>
+                            </div>
+                            <button onclick="addToCart(${p.id})" class="bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs px-3.5 py-2 rounded-xl transition shadow-md shadow-brand-500/20 active:scale-95">
+                                + Agregar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Filtrar productos con el buscador
+        function filterProducts(isMobile = false) {
+            const query = (isMobile ? document.getElementById('search-input-mobile') : document.getElementById('search-input')).value.toLowerCase();
+            const filtered = allProducts.filter(p => p.title.toLowerCase().includes(query) || p.brand.toLowerCase().includes(query));
+            renderProducts(filtered);
+        }
+
+        // Seleccionar Categoría
+        function selectCategory(catId, btnElement) {
+            document.querySelectorAll('.category-btn').forEach(b => {
+                b.className = "category-btn bg-slate-900 hover:bg-slate-800 text-slate-400 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap border border-slate-800 transition";
+            });
+            btnElement.className = "category-btn bg-brand-600 text-white px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap shadow-md shadow-brand-500/20";
+            loadProducts(catId);
+        }
+
+        // Modal de detalles
+        function openModal(id) {
+            const p = allProducts.find(prod => prod.id === id);
+            if (!p) return;
+
+            document.getElementById('modal-img').src = p.image_url;
+            document.getElementById('modal-brand').innerText = p.brand;
+            document.getElementById('modal-title').innerText = p.title;
+            document.getElementById('modal-desc').innerText = p.description;
+            document.getElementById('modal-price').innerText = `$${p.price}`;
+            
+            const btn = document.getElementById('modal-add-btn');
+            btn.onclick = () => { addToCart(p.id); closeModal(); };
+
+            document.getElementById('detail-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('detail-modal').classList.add('hidden');
+        }
+
+        // Lógica del Carrito
+        function addToCart(id) {
+            const item = allProducts.find(p => p.id === id);
+            const exist = cart.find(c => c.id === id);
+
+            if (exist) {
+                exist.qty += 1;
+            } else {
+                cart.push({ ...item, qty: 1 });
+            }
+
+            updateCartUI();
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(item => item.id !== id);
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const count = cart.reduce((sum, i) => sum + i.qty, 0);
+            const total = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+
+            document.getElementById('cart-badge').innerText = count;
+            document.getElementById('cart-total').innerText = `$${total.toFixed(2)}`;
+
+            const itemsContainer = document.getElementById('cart-items');
+            if (cart.length === 0) {
+                itemsContainer.innerHTML = '<p class="text-slate-500 text-center py-8 text-sm">El carrito está vacío.</p>';
+                return;
+            }
+
+            itemsContainer.innerHTML = cart.map(i => `
+                <div class="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800">
+                    <div class="flex items-center gap-3">
+                        <img src="${i.image_url}" class="w-12 h-12 rounded-lg object-cover">
+                        <div>
+                            <h4 class="text-xs font-bold text-white line-clamp-1">${i.title}</h4>
+                            <span class="text-xs text-brand-400 font-semibold">$${i.price} x ${i.qty}</span>
+                        </div>
+                    </div>
+                    <button onclick="removeFromCart(${i.id})" class="text-red-400 hover:text-red-300 text-xs px-2 py-1">Quitar</button>
+                </div>
+            `).join('');
+        }
+
+        function toggleCart() {
+            document.getElementById('cart-drawer').classList.toggle('hidden');
+        }
+
+        function contactProvider() {
+            if(cart.length === 0) {
+                alert("Agrega al menos un producto al carrito primero.");
+                return;
+            }
+            alert("Consulta enviada al proveedor. En la app móvil este botón abre chat directo o WhatsApp.");
         }
 
         // Inicializar
