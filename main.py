@@ -26,48 +26,53 @@ app.add_middleware(
 def seed_data():
     db = SessionLocal()
     try:
-        if db.query(models.Category).count() == 0:
-            laptops = models.Category(name="Laptops", slug="laptops")
-            gpus = models.Category(name="Tarjetas de Video", slug="gpus")
-            ram = models.Category(name="Memorias RAM", slug="ram")
-            
-            db.add_all([laptops, gpus, ram])
-            db.commit()
+        # Reemplazar productos viejos para forzar las URLs de imágenes HD
+        db.query(models.Product).delete()
+        db.query(models.Category).delete()
+        db.commit()
 
-            prods = [
-                models.Product(
-                    title="Laptop Gamer ASUS ROG Strix G16",
-                    description="Procesador Intel Core i7-13650HX, 16GB RAM DDR5, 1TB SSD NVMe, NVIDIA RTX 4060 8GB, Pantalla 16'' 165Hz.",
-                    price=1399.99,
-                    stock=5,
-                    image_url="https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=800&auto=format&fit=crop&q=80",
-                    brand="ASUS",
-                    category_id=laptops.id
-                ),
-                models.Product(
-                    title="NVIDIA GeForce RTX 4070 Super 12GB",
-                    description="Arquitectura Ada Lovelace, DLSS 3, Ray Tracing de 3ra generación. Rendimiento masivo para gaming a 1440p y renderizado 3D.",
-                    price=649.99,
-                    stock=8,
-                    image_url="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=800&auto=format&fit=crop&q=80",
-                    brand="NVIDIA",
-                    category_id=gpus.id
-                ),
-                models.Product(
-                    title="Memoria RAM Corsair Vengeance DDR5 32GB",
-                    description="Kit de 32GB (2x16GB) 6000MHz CL36. Disipador de aluminio anodizado, compatibilidad total con Intel XMP 3.0 y AMD EXPO.",
-                    price=115.00,
-                    stock=20,
-                    image_url="https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=800&auto=format&fit=crop&q=80",
-                    brand="Corsair",
-                    category_id=ram.id
-                )
-            ]
-            db.add_all(prods)
-            db.commit()
+        laptops = models.Category(name="Laptops", slug="laptops")
+        gpus = models.Category(name="Tarjetas de Video", slug="gpus")
+        ram = models.Category(name="Memorias RAM", slug="ram")
+        
+        db.add_all([laptops, gpus, ram])
+        db.commit()
+
+        prods = [
+            models.Product(
+                title="Laptop Gamer ASUS ROG Strix G16",
+                description="Procesador Intel Core i7-13650HX, 16GB RAM DDR5, 1TB SSD NVMe, NVIDIA RTX 4060 8GB, Pantalla 16'' 165Hz.",
+                price=1399.99,
+                stock=5,
+                image_url="https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=800&auto=format&fit=crop&q=80",
+                brand="ASUS",
+                category_id=laptops.id
+            ),
+            models.Product(
+                title="NVIDIA GeForce RTX 4070 Super 12GB",
+                description="Arquitectura Ada Lovelace, DLSS 3, Ray Tracing de 3ra generación. Rendimiento masivo para gaming a 1440p y renderizado 3D.",
+                price=649.99,
+                stock=8,
+                image_url="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=800&auto=format&fit=crop&q=80",
+                brand="NVIDIA",
+                category_id=gpus.id
+            ),
+            models.Product(
+                title="Memoria RAM Corsair Vengeance DDR5 32GB",
+                description="Kit de 32GB (2x16GB) 6000MHz CL36. Disipador de aluminio anodizado, compatibilidad total con Intel XMP 3.0 y AMD EXPO.",
+                price=115.00,
+                stock=20,
+                image_url="https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=800&auto=format&fit=crop&q=80",
+                brand="Corsair",
+                category_id=ram.id
+            )
+        ]
+        db.add_all(prods)
+        db.commit()
     finally:
         db.close()
 
+# <- AQUÍ ESTABA LA FÁLTA: Llamar a la función al iniciar la app
 seed_data()
 
 @app.get("/", include_in_schema=False)
